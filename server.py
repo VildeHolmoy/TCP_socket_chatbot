@@ -34,7 +34,7 @@ def main():
     print("[STARTING] Server is starting...")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(ADDR)
-    server.listen()
+    server.listen(5)
     print(f"[LISTENING] Server is listening on {IP}:{PORT}")
 
     while True:
