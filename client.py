@@ -7,7 +7,7 @@ import socket
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connects client to server, corresponds with ip and port in server.py
-clientSocket.connect((2233))
+clientSocket.connect((2022))
 
 
 

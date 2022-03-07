@@ -1,16 +1,14 @@
 import socket
-
+import threading
 
 # Need to setup connection to client server
 # Mangler threading
 
-# Instansiates a socket by specifying address family and socket type
+
+
+# Connection to clients
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Assigns port number to socket instance. (Will maybe need IP here, not sure yet)
-serverSocket.bind(ip, 2233))
-
-# Socket listens for incoming connections, maximum 5 connections simultanionsly
+serverSocket.bind(ip, 2022))
 serverSocket.listen(5)
 
 
