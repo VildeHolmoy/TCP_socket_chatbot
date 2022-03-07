@@ -3,6 +3,17 @@ import socket
 
 # Need to setup connection to client server
 
+# Instansiates a socket by specifying address family and socket type
+serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Assigns port number to socket instance. (Will maybe need IP here, not sure yet)
+serverSocket.bind(port)
+
+# Socket listens for incoming connections, maximum 5 connections simultanionsly
+serverSocket.listen(5)
+
+
+
 # Need to make 5 bots
 # The bots should have one of them to take input from client,
 # then the rest should respond in a dialog.
