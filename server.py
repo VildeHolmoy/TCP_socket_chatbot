@@ -4,12 +4,48 @@ import threading
 # Need to setup connection to client server
 # Mangler threading
 
-
-
 # Connection to clients
-serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serverSocket.bind(ip, 2022))
-serverSocket.listen(5)
+#serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#serverSocket.bind(ip, 2022))
+#serverSocket.listen(5)
+
+IP = socket.gethostbyname(socket.gethostname())
+PORT = 2022
+ADDR = (IP, PORT)
+SIZE = 1024
+FORMAT = "utf-8"
+DISCONNECT_MESSAGE = "exit"
+
+def handle_client(conn, addr):
+    print(f"[NEW CONNECTION] {addr} connected.")
+
+    connected = True
+    while connected:
+        msg = conn.recv(SIZE).decode(FORMAT)
+        if msg == DISCONNECT_MESSAGE:
+            connected = False
+
+        print(f"[{addr}] {msg}")
+        conn.send(msg.encode(FORMAT))
+
+    conn.close()
+
+def main():
+    print("[STARTING] Server is starting...")
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(ADDR)
+    server.listen()
+    print(f"[LISTENING] Server is listening on {IP}:{PORT}")
+
+    while True:
+        conn, addr = server.accept()
+        thread = threading.Thread(target=handle_client, args=(conn, addr))
+        thread.start()
+        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
+
+if __name__ == "__main__":
+    main()
+
 
 
 
