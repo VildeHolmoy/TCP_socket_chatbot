@@ -14,7 +14,6 @@ PORT = 2022
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
-DISCONNECT_MESSAGE = "exit"
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

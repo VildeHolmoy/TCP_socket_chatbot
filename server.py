@@ -1,50 +1,81 @@
 import socket
 import threading
+import time
+import random
+#from bots import goodWords, badWords, allWords
 
-# Need to setup connection to client server
-# Mangler threading
 
-# Connection to clients
-#serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#serverSocket.bind(ip, 2022))
-#serverSocket.listen(5)
-
+# Constants
 IP = socket.gethostbyname(socket.gethostname())
 PORT = 2022
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
-DISCONNECT_MESSAGE = "exit"
 
-def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {addr} connected.")
+# Creates TCP socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(ADDR)
+s.listen()
 
-    connected = True
-    while connected:
-        msg = conn.recv(SIZE).decode(FORMAT)
-        if msg == DISCONNECT_MESSAGE:
-            connected = False
+# List of connected clients and usernames
+clients = []
+usernames = []
 
-        print(f"[{addr}] {msg}")
-        conn.send(msg.encode(FORMAT))
+# Trenger:
+# Username
+# clientConnection fix
+# threads ??
 
-    conn.close()
+#class Client: ???
+    # def __init__(this, username, ):
 
-def main():
-    print("[STARTING] Server is starting...")
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(ADDR)
-    server.listen(5)
-    print(f"[LISTENING] Server is listening on {IP}:{PORT}")
+# Handles clients
+def clientConnection(client):
+   while True:
+       try:
+           message = client.recv(SIZE).decode(FORMAT)
+
+           if message == "exit":
+               for i in clients:
+                   i.close()
+               broadcast(f"{username} has left the server", client)
+
+           else:
+               broadcast(message, client)
+       except:
+           broadcast(f"{username} has left the server", client)
+
+
+
+# Sends message to all clients
+def broadcast(message, client):
+    for i in clients:
+        if i is not client:
+            i.send(message)
+
+# main function, runs the show. Adds clients to the server
+def connect():
+    print("Server is listening..")
 
     while True:
-        conn, addr = server.accept()
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
-        thread.start()
-        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
+        client, ADDR = s.accept()
+        client.send("Username?".encode(FORMAT))
+        username = client.recv(SIZE).decode(FORMAT)
+        clients.append(client)
+        usernames.append(username)
+        broadcast(f"{username} has connected to the server!".encode(FORMAT), client)
+        client.send(f"You have been connected to the server! Welcome".encode(FORMAT))
+        print(f"{username} have connected to the server")
 
-if __name__ == "__main__":
-    main()
+        thread = threading.Thread()
+        thread.start()
+
+    # telle klienter
+    # Skrive hvem som er koblet til
+
+
+
+connect()
 
 
 
