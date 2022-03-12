@@ -1,52 +1,41 @@
 import socket
 import sys
 
-
-IP = socket.gethostbyname(socket.gethostname())
-PORT = 2022
-ADDR = (IP, PORT)
+# Constants
 SIZE = 1024
 FORMAT = "utf-8"
 
-def main():
-
-    print(f"Hi! To connect to chatserver please write ip, port and botname. \n"
-          f"Example: localhost, 2022, Grumpy Gina. The current avaliable bots are .. \n"
-          f"Choose the bot that resonates the most with your current mood")
-
-    try:
-        ip = input(sys.argv[1])
-        port = input(int(sys.argv[2]))
-
-    except:
-        print(f"Ip and port must be specified")
+# Make user specify ip and port. Also gives help if needed.
+try:
+    ip = sys.argv[1]
+    if ip == "--help":
+        print(f" ======== Help has arrived ======== \n"
+              f"To start a client and connect to the chatroom please write: \n"
+              f"client.py <ip> <port> <botname> \n"
+              f"The ip and port should be the same as used in the server file. \n"
+              f"The bots to choose from are: Grumpy Gina, Happy Holly, Crazy Carl and Responsible Ralph. \n"
+              f"Please only use the bots names, as they are very emotional and will lash out if called any superlatives. \n"
+              f"If the bot you choose are already taken the terminal will show you who is available. \n"
+              f"Example to start chatroom: client.py localhost 2022 Gina \n"
+              f"Have fun!")
         sys.exit()
+    port = int(sys.argv[2])
+
+except(IndexError, ValueError):
+    print(f"Ip and port must be specified")
+    sys.exit()
+
+allBots = {"Grumpy Gina", "Happy Holly", "Crazy Carl", "Responsible Ralph"}
 
 
-
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ip, port)
-    print(f"[CONNECTED] Client connected to server at {IP}:{PORT}")
-
-    connected = True
-    while connected:
-        msg = input("> ")
-
-        client.send(msg.encode(FORMAT))
-
-        if msg == DISCONNECT_MESSAGE:
-            connected = False
-        else:
-            msg = client.recv(SIZE).decode(FORMAT)
-            print(f"[SERVER] {msg}")
-
-if __name__ == "__main__":
-    main()
+#try:
 
 
-
-
-# Need a loop as long as the client is connected do this ...
-
-# Need input parameter, with possible exit code
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((ip, port))
+name = sys.argv[3]
+print(f" ======== Welcome to the chatroom ======== \n"
+      f"Hi {name}! You are connected to server at {ip}:{port} \n"
+      f"... are already here! \n"
+      f"The chat will start when the room is full or in ... time")
 

@@ -1,13 +1,14 @@
 import socket
 import threading
+import sys
 import time
 import random
 #from bots import goodWords, badWords, allWords
 
 
 # Constants
-IP = socket.gethostbyname(socket.gethostname())
-PORT = 2022
+IP = sys.argv[1]
+PORT = int(sys.argv[2])
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
