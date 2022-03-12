@@ -1,6 +1,7 @@
 import socket
 import sys
 
+
 # Constants
 SIZE = 1024
 FORMAT = "utf-8"
@@ -25,17 +26,44 @@ except(IndexError, ValueError):
     print(f"Ip and port must be specified")
     sys.exit()
 
-allBots = {"Grumpy Gina", "Happy Holly", "Crazy Carl", "Responsible Ralph"}
+allBots = {"Gina", "Holly", "Carl", "Ralph"}
 
+# not working
+try:
+    name = sys.argv[3]
+    if name not in allBots:
+        print(f"Please choose one of these bots: Gina, Holly, Carl, Ralph")
 
-#try:
+except(KeyError):
+    print(f"Sorry, your bot is already taken, please choose another one")
+    sys.exit()
 
-
+# Kobler til socket på server, sender valgt botnavn
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((ip, port))
-name = sys.argv[3]
-print(f" ======== Welcome to the chatroom ======== \n"
-      f"Hi {name}! You are connected to server at {ip}:{port} \n"
-      f"... are already here! \n"
-      f"The chat will start when the room is full or in ... time")
 
+
+client.send(name.encode(FORMAT))
+
+# Mottar botnavn
+#def checkBot():
+
+
+# def recieveMsg():
+  #  message = client.recv(SIZE).decode(FORMAT)
+
+#print(message)
+
+def main():
+    while True:
+        try:
+            message = client.recv(SIZE).decode(FORMAT)
+            print(message)
+           # if message == "Bot":
+            #    client.send(name.encode(FORMAT))
+
+        except:
+            client.close()
+
+
+main()

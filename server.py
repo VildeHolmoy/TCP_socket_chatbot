@@ -5,18 +5,20 @@ import time
 import random
 #from bots import goodWords, badWords, allWords
 
-
-# Constants
-IP = sys.argv[1]
-PORT = int(sys.argv[2])
-ADDR = (IP, PORT)
+#Constants
 SIZE = 1024
 FORMAT = "utf-8"
 
+ip = sys.argv[1]
+port = int(sys.argv[2])
+adress = (ip, port)
+
+
 # Creates TCP socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(ADDR)
-s.listen()
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind(adress)
+s.listen(4)
 
 # List of connected clients and usernames
 clients = []
@@ -31,7 +33,7 @@ usernames = []
     # def __init__(this, username, ):
 
 # Handles clients
-def clientConnection(client):
+def handleClient(client):
    while True:
        try:
            message = client.recv(SIZE).decode(FORMAT)
@@ -40,7 +42,6 @@ def clientConnection(client):
                for i in clients:
                    i.close()
                broadcast(f"{username} has left the server", client)
-
            else:
                broadcast(message, client)
        except:
@@ -49,36 +50,62 @@ def clientConnection(client):
 
 
 # Sends message to all clients
-def broadcast(message, client):
-    for i in clients:
-        if i is not client:
-            i.send(message)
+def broadcast(message, sender = None):
+    if type(message) == str:
+        message = message.encode()
+
+    for client in clients:
+        if client != sender:
+            client.send(message)
+    time.sleep(0.1)
 
 # main function, runs the show. Adds clients to the server
 def connect():
     print("Server is listening..")
 
-    while True:
-        client, ADDR = s.accept()
-        client.send("Username?".encode(FORMAT))
-        username = client.recv(SIZE).decode(FORMAT)
-        clients.append(client)
-        usernames.append(username)
-        broadcast(f"{username} has connected to the server!".encode(FORMAT), client)
-        client.send(f"You have been connected to the server! Welcome".encode(FORMAT))
-        print(f"{username} have connected to the server")
+    while clients.__len__() < 4:
+        try:
+            #working
+            client, adress = s.accept()
+            username = client.recv(SIZE).decode(FORMAT)
+            clients.append(client)
 
+            # not working
+            if username in usernames:
+                s.close()
+
+            #working
+            usernames.append(username)
+            print(usernames)
+            print(f"{username} have connected to the server")
+            client.send(f" ======== Welcome to the chatroom ======== \n"
+                        f"Hi! You are connected to server at {ip}:{port} \n"
+                        f"Now we have {' and '.join(usernames)} here! \n"
+                        f"The chat will start when the room is full or in ... time".encode(FORMAT))
+
+            # working
+            broadcast(f"{username} has connected to the server! We need {4-(len(usernames))} more \n"
+                      f"to start the chat".encode(FORMAT), client)
+
+
+
+        except:
+            #Not working
+            client.send(str(f"something has happened. You were kicked out").encode(FORMAT))
+            s.close()
+
+    if clients.__len__() == 4:
+        # dont know what this does
         thread = threading.Thread()
         thread.start()
+        thread.join()
+
+        # Start broadcast chat here
 
     # telle klienter
     # Skrive hvem som er koblet til
 
-
-
 connect()
-
-
 
 
 # Need to make 5 bots
@@ -93,4 +120,3 @@ connect()
 # I can decide when and how to disconnect clients
 # one bot should take response from command line
 # The bots are not the first to speak, but they will always respond
-#
