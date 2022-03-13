@@ -39,11 +39,11 @@ except(KeyError):
     sys.exit()
 
 # Kobler til socket på server, sender valgt botnavn
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((ip, port))
+clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+clientSocket.connect((ip, port))
 
 
-client.send(name.encode(FORMAT))
+
 
 # Mottar botnavn
 #def checkBot():
@@ -57,13 +57,25 @@ client.send(name.encode(FORMAT))
 def main():
     while True:
         try:
-            message = client.recv(SIZE).decode(FORMAT)
-            print(message)
-           # if message == "Bot":
-            #    client.send(name.encode(FORMAT))
+            message = clientSocket.recv(SIZE).decode(FORMAT)
+
+            if message == "Bot":
+                clientSocket.send(name.encode(FORMAT))
+
+            elif message == "Taken":
+                print(f"This bot is already spoken for. Please choose another bot.")
+                msg = clientSocket.recv(SIZE).decode(FORMAT)
+                print(msg)
+                clientSocket.shutdown(2)
+                clientSocket.close()
+
+            else:
+                print(message)
 
         except:
-            client.close()
+            clientSocket.close()
+            quit()
+            break
 
 
 main()

@@ -9,6 +9,7 @@ import random
 SIZE = 1024
 FORMAT = "utf-8"
 
+# Connection input
 ip = sys.argv[1]
 port = int(sys.argv[2])
 adress = (ip, port)
@@ -24,13 +25,9 @@ s.listen(4)
 clients = []
 usernames = []
 
-# Trenger:
-# Username
-# clientConnection fix
-# threads ??
+# Botnames
+botnames = {"Gina", "Holly", "Carl", "Ralph"}
 
-#class Client: ???
-    # def __init__(this, username, ):
 
 # Handles clients
 def handleClient(client):
@@ -59,6 +56,29 @@ def broadcast(message, sender = None):
             client.send(message)
     time.sleep(0.1)
 
+def checkUsername(client):
+    client.send("Bot".encode(FORMAT))
+    username = client.recv(SIZE).decode(FORMAT)
+
+    if username not in usernames:
+        clients.append(client)
+        usernames.append(username)
+        print(f"{username} have connected to the server")
+        client.send(f" ======== Welcome to the chatroom ======== \n"
+                    f"Hi! You are connected to server at {ip}:{port} \n"
+                    f"Now we have {' and '.join(usernames)} here! \n"
+                    f"The chat will start when the room is full or in ... time".encode(FORMAT))
+        broadcast(f"{username} has connected to the server! We need {4 - (len(usernames))} more \n"
+                  f"to start the chat".encode(FORMAT), client)
+        time.sleep(0.2)
+    else:
+        #usernamesLowercase = [i.lower for i in usernames]
+        client.send(f"Taken".encode(FORMAT))
+        availableBots = set(botnames).difference(set(usernames))
+        client.send(f"{' and '.join(availableBots)} is the bot(s) that are still available".encode(FORMAT))
+        client.close()
+
+
 # main function, runs the show. Adds clients to the server
 def connect():
     print("Server is listening..")
@@ -67,32 +87,14 @@ def connect():
         try:
             #working
             client, adress = s.accept()
-            username = client.recv(SIZE).decode(FORMAT)
-            clients.append(client)
-
-            # not working
-            if username in usernames:
-                s.close()
-
-            #working
-            usernames.append(username)
-            print(usernames)
-            print(f"{username} have connected to the server")
-            client.send(f" ======== Welcome to the chatroom ======== \n"
-                        f"Hi! You are connected to server at {ip}:{port} \n"
-                        f"Now we have {' and '.join(usernames)} here! \n"
-                        f"The chat will start when the room is full or in ... time".encode(FORMAT))
-
-            # working
-            broadcast(f"{username} has connected to the server! We need {4-(len(usernames))} more \n"
-                      f"to start the chat".encode(FORMAT), client)
+            checkUsername(client)
 
 
-
-        except:
+        except KeyboardInterrupt:
             #Not working
             client.send(str(f"something has happened. You were kicked out").encode(FORMAT))
-            s.close()
+            quit()
+
 
     if clients.__len__() == 4:
         # dont know what this does
