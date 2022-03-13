@@ -1,6 +1,8 @@
 import socket
 import sys
-
+from bots import activationBot
+import threading
+import time
 
 # Constants
 SIZE = 1024
@@ -46,11 +48,14 @@ clientSocket.connect((ip, port))
 def main():
     while True:
         try:
+            # Is always receiving messages sent from server
             message = clientSocket.recv(SIZE).decode(FORMAT)
 
+            # Takes request from server to get botname/username
             if message == "Bot":
                 clientSocket.send(name.encode(FORMAT))
 
+            # If username is taken, the client disconnects from the socket
             elif message == "Taken":
                 print(f"This bot is already spoken for. Please choose another bot.")
                 msg = clientSocket.recv(SIZE).decode(FORMAT)
@@ -58,7 +63,22 @@ def main():
                 clientSocket.shutdown(2)
                 clientSocket.close()
 
-            else:
+            # When the President starts dialouge, the clients should respond // needs fixing
+            elif message.startswith(f"The President:"):
+                words = message.split(' ')
+                activity = words[4]
+                try:
+                    activity2 = words[6]
+                except:
+                    activity2 = None
+                print(message)
+                clientMessage = activationBot(name, activity, activity2)
+                print(f"You said: {clientMessage}")
+                clientSocket.send(f"{name}: {clientMessage}".encode())
+                answer = clientSocket.recv(SIZE).decode(FORMAT)
+                print(answer)
+
+            elif message != "":
                 print(message)
 
         except:

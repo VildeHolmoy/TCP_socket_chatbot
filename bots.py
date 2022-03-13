@@ -7,6 +7,8 @@ badWords = ["kill", "murder", "punch", "kick", "fight", "mock", "steal", "destro
             "break", "hurt", "abuse", "harm", "insult", "yell"]
 allWords = goodWords + badWords
 
+botnames = {"Gina", "Holly", "Carl", "Ralph"}
+
 
 # bot1 - Happy Holly
 def holly(a, b = None):
@@ -44,10 +46,13 @@ def ralph(a, b = None):
     if b != None:
         return "You are going to far again, Carl. {} or {} sounds safe. Lets do that".format(a+"ing", b+"ing")
     else:
-        return "Carl, you need to calm down. At least while {}, we will walk away from it" \
+        return "Carl, you need to calm down. At least while {}, we will walk away from it " \
                "without physical harm".format(a+"ing")
 
+botCapitalized = {'Holly':holly, 'Gina':gina, 'Carl':carl, 'Ralph':ralph}
 
-# thePresident - the bot who starts the dialog
-## Unsure how this will be implemented.
-#def president()
+def activationBot(bot, activity, activity2 = None):
+    if bot in botCapitalized:
+        return botCapitalized[bot](activity, activity2)
+    else:
+        return f"something went wrong"

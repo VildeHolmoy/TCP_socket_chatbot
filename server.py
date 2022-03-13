@@ -36,49 +36,6 @@ allWords = goodWords + badWords
 
 noSuggestion = [None]*(int(goodWords.__len__()/2))
 
-# bot1 - Happy Holly
-def holly(a, b = None):
-    if b != None:
-        return "{} and {} at the same time? Sounds great to me!".format(a+"ing", b+"ing")
-    else:
-        return "{} sounds awesome! Lets gooo".format(a+"ing")
-
-
-# bot2 - Grumpy Gina
-def gina(a, b = None):
-    if b != None:
-        return "I don't feel like {}. I don't really want to {} either. Why do you always " \
-               "come up with such bad suggestions?".format(a+"ing", b+"ing")
-    else:
-        return "Ugh, not {}. That's so boring".format(a+"ing")
-
-
-# bot3 - Crazy Carl
-def carl(a, b = None):
-    suggestion = random.choice(badWords)
-    while (suggestion == a) or (suggestion == b):
-        suggestion = random.choice(badWords)
-
-    # Here, I can write more advanced code if a and b is good words.
-    if b != None:
-        return "{} and {} is okay I guess, but what about {}?".format(a+"ing", b+"ing", suggestion+"ing")
-    else:
-        return "I guess we could do some {}, but what about {}?".format(a+"ing", suggestion+"ing")
-
-
-# bot4 - Responsible Ralph
-# Here, I can also write more advanced code to respond to Carl
-def ralph(a, b = None):
-    if b != None:
-        return "You are going to far again, Carl. {} or {} sounds safe. Lets do that".format(a+"ing", b+"ing")
-    else:
-        return "Carl, you need to calm down. At least while {}, we will walk away from it" \
-               "without physical harm".format(a+"ing")
-
-
-# thePresident - the bot who starts the dialog
-## Unsure how this will be implemented.
-#def president()
 
 # Handles clients
 def handleClient(client):
@@ -95,34 +52,23 @@ def handleClient(client):
        except:
            broadcast(f"{username} has left the server", client)
 
-def startChat():
+def startChat(client):
     activity = random.choice(goodWords)
     activity2 = random.choice(goodWords + noSuggestion)
 
     if activity2 == None:
-        messagePresident = f"The President: We should {activity}!"
-        messageHolly = f"Happy Holly: {holly(activity)} \n"
-        messageGina = f"Grumpy Gina: {gina(activity)} \n"
-        messageCarl = f"Crazy Carl: {carl(activity)} \n"
-        messageRalph = f"Responsible Ralph: {ralph(activity)} \n"
+        message = f"The President: We should {activity}"
+
     else:
-        messagePresident = f"The President: We should {activity} or {activity2}"
-        messageHolly = f"Happy Holly: {holly(activity, activity2)} \n"
-        messageGina = f"Grumpy Gina: {gina(activity,activity2)} \n"
-        messageCarl = f"Crazy Carl: {carl(activity,activity2)} \n"
-        messageRalph = f"Responsible Ralph: {ralph(activity,activity2)} \n"
+        message = f"The President: We should {activity} or {activity2}"
 
     for client in clients:
-        client.send(messagePresident.encode(FORMAT))
-        client.send(messageHolly.encode(FORMAT))
-        client.send(messageGina.encode(FORMAT))
-        client.send(messageCarl.encode(FORMAT))
-        client.send(messageRalph.encode(FORMAT))
+        client.send(message.encode(FORMAT))
 
     for client in clients:
-        message = client.recv(SIZE).decode(FORMAT)
-        time.sleep(0.4)
-        broadcast(message, client)
+        message2 = client.recv(SIZE).decode(FORMAT)
+        broadcast(message2, client)
+        time.sleep(1)
 
 
 # Sends message to all clients
@@ -133,7 +79,7 @@ def broadcast(message, sender = None):
     for client in clients:
         if client != sender:
             client.send(message)
-    time.sleep(0.1)
+    time.sleep(1)
 
 def checkUsername(client):
     client.send("Bot".encode(FORMAT))
@@ -147,8 +93,7 @@ def checkUsername(client):
                     f"Hi! You are connected to server at {ip}:{port} \n"
                     f"Now we have {' and '.join(usernames)} here! \n"
                     f"The chat will start when the room is full or in ... time".encode(FORMAT))
-        broadcast(f"{username} has connected to the server! We need {4 - (len(usernames))} more \n"
-                  f"to start the chat".encode(FORMAT), client)
+        broadcast(f"{username} has connected to the server! We need {4 - (len(usernames))} more to start the chat".encode(FORMAT), client)
         time.sleep(0.2)
     else:
         #usernamesLowercase = [i.lower for i in usernames]
@@ -177,11 +122,15 @@ def connect():
 
     if clients.__len__() == 4:
         # dont know what this does
-        thread = threading.Thread(target=startChat)
+        thread = threading.Thread(target=startChat, args=(client,))
         thread.start()
         print(str(thread))
         thread.join()
 
+        # Not working properly, need fixing, maybe a sendtoall function
+        broadcast(f"The President: Well, I'm the boss here and I say we sing")
+        time.sleep(15)
+        quit()
 
     # telle klienter
     # Skrive hvem som er koblet til
@@ -194,9 +143,9 @@ connect()
 # then the rest should respond in a dialog.
 
 # Rules:
-# The server should accept any connection e.g there can be more than one user on client??
+# The server should accept any connection
 # It should be a sort of "chat room"
-# All responses should be sent back to all clients (except the one who sent it? (from assignment))
+# All responses from one client should be sent back to all other clients except the one who sent it
 # There should be a list of connected clients
 # I can decide when and how to disconnect clients
 # one bot should take response from command line
