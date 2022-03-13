@@ -52,6 +52,7 @@ def startChat():
 
     if activity2 == None:
         message = f"The President: We should {activity}!"
+        message += holly().
     else:
         message = f"The President: We should {activity} or {activity2}"
 
