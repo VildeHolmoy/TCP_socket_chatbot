@@ -1,2 +1,2 @@
-# bad_bot_chat
+# TCP_socket_chatbot
 For a school project
