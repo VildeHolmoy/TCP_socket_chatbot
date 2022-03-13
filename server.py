@@ -51,7 +51,7 @@ def startChat():
     activity2 = random.choice(goodWords + noSuggestion)
 
     if activity2 == None:
-        message = f"The President: {activity}"
+        message = f"The President: We should {activity}!"
     else:
         message = f"The President: We should {activity} or {activity2}"
 
@@ -118,9 +118,8 @@ def connect():
         # dont know what this does
         thread = threading.Thread(target=startChat)
         thread.start()
+        print(str(thread))
         thread.join()
-
-        quit()
 
 
     # telle klienter
