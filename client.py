@@ -43,17 +43,6 @@ clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((ip, port))
 
 
-
-
-# Mottar botnavn
-#def checkBot():
-
-
-# def recieveMsg():
-  #  message = client.recv(SIZE).decode(FORMAT)
-
-#print(message)
-
 def main():
     while True:
         try:

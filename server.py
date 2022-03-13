@@ -3,7 +3,8 @@ import threading
 import sys
 import time
 import random
-#from bots import goodWords, badWords, allWords
+import bots
+from bots import goodWords, badWords, allWords
 
 #Constants
 SIZE = 1024
@@ -28,6 +29,7 @@ usernames = []
 # Botnames
 botnames = {"Gina", "Holly", "Carl", "Ralph"}
 
+noSuggestion = [None]*(int(goodWords.__len__()/2))
 
 # Handles clients
 def handleClient(client):
@@ -44,6 +46,22 @@ def handleClient(client):
        except:
            broadcast(f"{username} has left the server", client)
 
+def startChat():
+    activity = random.choice(goodWords)
+    activity2 = random.choice(goodWords + noSuggestion)
+
+    if activity2 == None:
+        message = f"The President: {activity}"
+    else:
+        message = f"The President: We should {activity} or {activity2}"
+
+    for client in clients:
+        client.send(message.encode(FORMAT))
+
+    for client in clients:
+        message = client.recv(SIZE).decode(FORMAT)
+        time.sleep(0.4)
+        broadcast(message, client)
 
 
 # Sends message to all clients
@@ -98,11 +116,12 @@ def connect():
 
     if clients.__len__() == 4:
         # dont know what this does
-        thread = threading.Thread()
+        thread = threading.Thread(target=startChat)
         thread.start()
         thread.join()
 
-        # Start broadcast chat here
+        quit()
+
 
     # telle klienter
     # Skrive hvem som er koblet til

@@ -7,6 +7,7 @@ badWords = ["kill", "murder", "punch", "kick", "fight", "mock", "steal", "destro
             "break", "hurt", "abuse", "harm", "insult", "yell"]
 allWords = goodWords + badWords
 
+
 # bot1 - Happy Holly
 def holly(a, b = None):
     if b != None:
@@ -27,7 +28,7 @@ def gina(a, b = None):
 # bot3 - Crazy Carl
 def carl(a, b = None):
     suggestion = random.choice(badWords)
-    while (suggestion ==) a or (suggestion == b):
+    while (suggestion == a) or (suggestion == b):
         suggestion = random.choice(badWords)
 
     # Here, I can write more advanced code if a and b is good words.
@@ -49,4 +50,4 @@ def ralph(a, b = None):
 
 # thePresident - the bot who starts the dialog
 ## Unsure how this will be implemented.
-def president()
+# def president()
