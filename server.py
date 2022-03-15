@@ -52,23 +52,36 @@ def handleClient(client):
        except:
            broadcast(f"{username} has left the server", client)
 
-def startChat(client):
-    activity = random.choice(goodWords)
-    activity2 = random.choice(goodWords + noSuggestion)
+def startChat(client, i):
+    if i == 0:
+        broadcast("======== Welcome to the chatroom to all you piles of metal ========")
 
-    if activity2 == None:
-        message = f"The President: We should {activity}"
+    if i < 3:
+        activity = random.choice(goodWords)
+        activity2 = random.choice(goodWords + noSuggestion)
 
-    else:
-        message = f"The President: We should {activity} or {activity2}"
+        if activity2 == None:
+            message = f"The President: We should {activity}"
 
-    for client in clients:
-        client.send(message.encode(FORMAT))
+        else:
+            message = f"The President: We should {activity} or {activity2}"
 
-    for client in clients:
-        message2 = client.recv(SIZE).decode(FORMAT)
-        broadcast(message2, client)
-        time.sleep(1)
+        for client in clients:
+            client.send(message.encode(FORMAT))
+
+        for client in clients:
+            message2 = client.recv(SIZE).decode(FORMAT)
+            client.send(message2.encode(FORMAT))
+            broadcast(message2, client)
+            time.sleep(1)
+
+        broadcast(f"The President: You never agree on anything. We will start a new round "
+              f"in 15 seconds.")
+        time.sleep(3)
+        broadcast(f"======== New Round =========")
+        startChat(client, i+1)
+    elif i >= 3:
+        broadcast(f"Bye")
 
 
 # Sends message to all clients
@@ -82,7 +95,7 @@ def broadcast(message, sender = None):
     time.sleep(1)
 
 def checkUsername(client):
-    client.send("Bot".encode(FORMAT))
+    client.send("GetUsername".encode(FORMAT))
     username = client.recv(SIZE).decode(FORMAT)
 
     if username not in usernames:
@@ -112,7 +125,9 @@ def connect():
             #working
             client, adress = s.accept()
             checkUsername(client)
-
+            # Kan ha threading her for å lage egen thread til hver klient
+            #thread = threading.Thread(target=startChat, args=(client, 0))
+            #print(str(thread))
 
         except KeyboardInterrupt:
             #Not working
@@ -121,15 +136,14 @@ def connect():
 
 
     if clients.__len__() == 4:
-        # dont know what this does
-        thread = threading.Thread(target=startChat, args=(client,))
+        #Starts new thread for chatroom
+        thread = threading.Thread(target=startChat, args=(client, 0))
         thread.start()
         print(str(thread))
-        thread.join()
+        # All threads are joined so everyone sees what the others said
+        #thread.join()
 
-        # Not working properly, need fixing, maybe a sendtoall function
-        broadcast(f"The President: Well, I'm the boss here and I say we sing")
-        time.sleep(15)
+        time.sleep(2)
         quit()
 
     # telle klienter
