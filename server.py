@@ -5,20 +5,21 @@ import time
 import random
 from bots import goodWords, noSuggestion
 
-#Constants
+
+# Constants
 SIZE = 1024
 FORMAT = "utf-8"
 
 # Connection input
 ip = "0.0.0.0"
 port = int(sys.argv[1])
-adress = (ip, port)
+address = (ip, port)
 
 
 # Creates TCP socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind(adress)
+s.bind(address)
 s.listen()
 
 # List of connected clients and usernames
@@ -28,24 +29,6 @@ usernames = []
 # Botnames
 botnames = {"Gina", "Holly", "Carl", "Ralph"}
 
-
-
-
-# Handles clients
-#def handleClient(client):
-
- #  while True:
-  #     try:
-   #        message = client.recv(SIZE).decode(FORMAT)
-
-    #       if message == "exit":
-     #          for i in clients:
-      #             i.close()
-       #        broadcast(f"{username} has left the server", client)
-        #   else:
-         #      broadcast(message, client)
-      # except:
-       #    broadcast(f"{username} has left the server", client)
 
 def startChat(client, i):
     if i == 0:
@@ -61,14 +44,15 @@ def startChat(client, i):
         activity = random.choice(goodWords)
         activity2 = random.choice(goodWords + noSuggestion)
 
-        if activity2 == None:
+        if activity2 is None:
             message = f"The President: We should {activity}"
+            print(message)
+            time.sleep(2)
 
-        else:
+        elif activity2:
             message = f"The President: We should {activity} or {activity2}"
-
-        print(message)
-        time.sleep(2)
+            print(message)
+            time.sleep(2)
 
         for client in clients:
             client.send(message.encode(FORMAT))
@@ -76,24 +60,37 @@ def startChat(client, i):
         for client in clients:
             time.sleep(2)
             message2 = client.recv(SIZE).decode(FORMAT)
-            client.send(message2.encode(FORMAT))
+            # client.send(message2.encode(FORMAT))
             print(message2)
-            broadcast(message2, client)
+            broadcast(message2)
 
+        question = "The President: What du you think human? If you dont have any thoughts just press enter."
+        broadcast(question)
+        print(question)
 
-        lastAnswer = "The President: You never agree on anything. We will start a new round in 5 seconds."
-        broadcast(lastAnswer)
-        print(lastAnswer)
+        messageFromClient = input()
+        if messageFromClient != "":
+            broadcast(messageFromClient)
+            messageP2 = f"The President: The human have spoken! We will take your input into consideration. \n" \
+                        f"A new round will start in 5 seconds."
+            print(messageP2)
+            broadcast(messageP2)
+            time.sleep(5)
+            startChat(client, i + 1)
+
+        messageP1 = f"The President: Well I guess it's up to me then! I say we {activity}. \n" \
+                    f"Next round starts in 5 seconds"
+        print(messageP1)
+        broadcast(messageP1)
         time.sleep(5)
-
-        startChat(client, i+1)
-    elif i >= 3:
+        startChat(client, i + 1)
+    if i >= 3:
         broadcast(f"Bye")
-        print(f"Chatroom closed. Start new chat the same way you did before if you want more of "
+        print(f"Chatroom closed. I think you need a break from those bots! \n"
+              f"Start new chat the same way you did before, if you want more of "
               f"those silly suggestions")
     quit()
     sys.exit()
-
 
 
 # Sends message to all clients
@@ -105,6 +102,7 @@ def broadcast(message, sender = None):
         if client != sender:
             client.send(message)
     time.sleep(1)
+
 
 def checkUsername(client):
     client.send("GetUsername".encode(FORMAT))
@@ -120,7 +118,7 @@ def checkUsername(client):
                     f"The chat will start when the room is full. We need {4 - (len(usernames))} more to start the chat".encode(FORMAT))
         broadcast(f"{username} has connected to the server! We need {4 - (len(usernames))} more to start the chat".encode(FORMAT), client)
     else:
-        #usernamesLowercase = [i.lower for i in usernames]
+        # usernamesLowercase = [i.lower for i in usernames]
         client.send(f"Taken".encode(FORMAT))
         availableBots = set(botnames).difference(set(usernames))
         client.send(f"{' and '.join(availableBots)} is the bot(s) that are still available".encode(FORMAT))
@@ -128,17 +126,18 @@ def checkUsername(client):
 
 
 # main function, runs the show. Adds clients to the server
-def connect():
+# def connect():
+while True:
     print("Server is listening..")
 
     while clients.__len__() < 4:
         try:
-            #working
-            client, adress = s.accept()
+            # working
+            client, address = s.accept()
             checkUsername(client)
             # Kan ha threading her for å lage egen thread til hver klient
-            #thread = threading.Thread(target=startChat, args=(client, 0))
-            #print(str(thread))
+            # thread = threading.Thread(target=startChat, args=(client, 0))
+            # print(str(thread))
 
         except KeyboardInterrupt:
             #Not working
@@ -147,31 +146,16 @@ def connect():
 
 
     if clients.__len__() == 4:
-        print(f"Chatroom is now full, and chat will start in 5 seconds")
-        broadcast(f"Chatroom is now full! chat will start in 5 seconds")
-        #Starts new thread for chatroom
+        print(f"Chatroom is now full, and Chat will start in 5 seconds")
+        broadcast(f"Chatroom is now full! Chat will start in 5 seconds")
+        # Starts new thread for chatroom
         time.sleep(5)
         thread = threading.Thread(target=startChat, args=(client, 0))
         thread.start()
 
-
-        while True:
-            try:
-                #threadInput = threading.Thread()
-                #threadInput.start()
-                messageFromServer = input()
-
-                if messageFromServer != "":
-                    broadcast(f"Host: {messageFromServer}")
-
-            except:
-                quit()
-
-
-
     quit()
 
-connect()
+#connect()
 
 
 # Rules:

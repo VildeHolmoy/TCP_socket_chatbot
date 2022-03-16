@@ -63,7 +63,7 @@ def main():
                 clientSocket.close()
 
             # When the President starts dialouge, the clients should respond // needs fixing
-            elif message.startswith(f"The President: We"):
+            elif message.startswith(f"The President: We "):
                 words = message.split(' ')
                 activity = words[4]
                 try:
