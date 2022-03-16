@@ -3,14 +3,15 @@ import threading
 import sys
 import time
 import random
+from bots import goodWords, noSuggestion
 
 #Constants
 SIZE = 1024
 FORMAT = "utf-8"
 
 # Connection input
-ip = sys.argv[1]
-port = int(sys.argv[2])
+ip = "0.0.0.0"
+port = int(sys.argv[1])
 adress = (ip, port)
 
 
@@ -18,7 +19,7 @@ adress = (ip, port)
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind(adress)
-s.listen(4)
+s.listen()
 
 # List of connected clients and usernames
 clients = []
@@ -27,34 +28,34 @@ usernames = []
 # Botnames
 botnames = {"Gina", "Holly", "Carl", "Ralph"}
 
-# Verbs/actions
-goodWords = ["play", "sing", "laugh", "talk", "eat", "paint", "walk", "build", "draw", "study",
-             "read", "learn", "sleep", "work", "code"]
-badWords = ["kill", "murder", "punch", "kick", "fight", "mock", "steal", "destroy", "scream",
-            "break", "hurt", "abuse", "harm", "insult", "yell"]
-allWords = goodWords + badWords
 
-noSuggestion = [None]*(int(goodWords.__len__()/2))
 
 
 # Handles clients
-def handleClient(client):
-   while True:
-       try:
-           message = client.recv(SIZE).decode(FORMAT)
+#def handleClient(client):
 
-           if message == "exit":
-               for i in clients:
-                   i.close()
-               broadcast(f"{username} has left the server", client)
-           else:
-               broadcast(message, client)
-       except:
-           broadcast(f"{username} has left the server", client)
+ #  while True:
+  #     try:
+   #        message = client.recv(SIZE).decode(FORMAT)
+
+    #       if message == "exit":
+     #          for i in clients:
+      #             i.close()
+       #        broadcast(f"{username} has left the server", client)
+        #   else:
+         #      broadcast(message, client)
+      # except:
+       #    broadcast(f"{username} has left the server", client)
 
 def startChat(client, i):
     if i == 0:
+        print("======== Welcome to the chatroom o mighty human ========")
         broadcast("======== Welcome to the chatroom to all you piles of metal ========")
+
+    if i == 1 or i == 2:
+        newRound = "======== New Round ========="
+        broadcast(newRound)
+        print(newRound)
 
     if i < 3:
         activity = random.choice(goodWords)
@@ -66,22 +67,33 @@ def startChat(client, i):
         else:
             message = f"The President: We should {activity} or {activity2}"
 
+        print(message)
+        time.sleep(2)
+
         for client in clients:
             client.send(message.encode(FORMAT))
 
         for client in clients:
+            time.sleep(2)
             message2 = client.recv(SIZE).decode(FORMAT)
             client.send(message2.encode(FORMAT))
+            print(message2)
             broadcast(message2, client)
-            time.sleep(1)
 
-        broadcast(f"The President: You never agree on anything. We will start a new round "
-              f"in 15 seconds.")
-        time.sleep(3)
-        broadcast(f"======== New Round =========")
+
+        lastAnswer = "The President: You never agree on anything. We will start a new round in 5 seconds."
+        broadcast(lastAnswer)
+        print(lastAnswer)
+        time.sleep(5)
+
         startChat(client, i+1)
     elif i >= 3:
         broadcast(f"Bye")
+        print(f"Chatroom closed. Start new chat the same way you did before if you want more of "
+              f"those silly suggestions")
+    quit()
+    sys.exit()
+
 
 
 # Sends message to all clients
@@ -103,11 +115,10 @@ def checkUsername(client):
         usernames.append(username)
         print(f"{username} have connected to the server")
         client.send(f" ======== Welcome to the chatroom ======== \n"
-                    f"Hi! You are connected to server at {ip}:{port} \n"
+                    f"Hi! You are connected to server at port {port} \n"
                     f"Now we have {' and '.join(usernames)} here! \n"
-                    f"The chat will start when the room is full or in ... time".encode(FORMAT))
+                    f"The chat will start when the room is full. We need {4 - (len(usernames))} more to start the chat".encode(FORMAT))
         broadcast(f"{username} has connected to the server! We need {4 - (len(usernames))} more to start the chat".encode(FORMAT), client)
-        time.sleep(0.2)
     else:
         #usernamesLowercase = [i.lower for i in usernames]
         client.send(f"Taken".encode(FORMAT))
@@ -136,25 +147,32 @@ def connect():
 
 
     if clients.__len__() == 4:
+        print(f"Chatroom is now full, and chat will start in 5 seconds")
+        broadcast(f"Chatroom is now full! chat will start in 5 seconds")
         #Starts new thread for chatroom
+        time.sleep(5)
         thread = threading.Thread(target=startChat, args=(client, 0))
         thread.start()
-        print(str(thread))
-        # All threads are joined so everyone sees what the others said
-        #thread.join()
 
-        time.sleep(2)
-        quit()
 
-    # telle klienter
-    # Skrive hvem som er koblet til
+        while True:
+            try:
+                #threadInput = threading.Thread()
+                #threadInput.start()
+                messageFromServer = input()
+
+                if messageFromServer != "":
+                    broadcast(f"Host: {messageFromServer}")
+
+            except:
+                quit()
+
+
+
+    quit()
 
 connect()
 
-
-# Need to make 5 bots
-# The bots should have one of them to take input from client,
-# then the rest should respond in a dialog.
 
 # Rules:
 # The server should accept any connection

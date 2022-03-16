@@ -1,10 +1,6 @@
 import sys
 import socket
-
-import client
 from bots import activationBot
-import threading
-import time
 
 # Constants
 SIZE = 1024
@@ -17,11 +13,12 @@ try:
         print(f" ======== Help has arrived ======== \n"
               f"To start a client and connect to the chatroom please write: \n"
               f"client.py <ip> <port> <botname> \n"
-              f"The ip and port should be the same as used in the server file. \n"
+              f"For the ip address you can use 'localhost'. The port should be the same as used in the server file. \n"
               f"The bots to choose from are: Grumpy Gina, Happy Holly, Crazy Carl and Responsible Ralph. \n"
-              f"Please only use the bots names, as they are very emotional and will lash out if called any superlatives. \n"
+              f"Please only use the bots first names, as they are very emotional and will be hurt if called any superlatives. \n"
+              f"Remember that bots have an unbelievable memory. Don't get on their bad side.\n"
               f"If the bot you choose are already taken the terminal will show you who is available. \n"
-              f"Example to start chatroom: client.py localhost 2022 Gina \n"
+              f"Example to connect to server: client.py localhost 2022 Gina \n"
               f"Have fun!")
         sys.exit()
     port = int(sys.argv[2])
@@ -30,9 +27,9 @@ except(IndexError, ValueError):
     print(f"Ip and port must be specified")
     sys.exit()
 
+
 allBots = {"Gina", "Holly", "Carl", "Ralph"}
 
-# not working
 try:
     name = sys.argv[3]
     if name not in allBots:
@@ -42,7 +39,7 @@ except(KeyError):
     print(f"Sorry, your bot is already taken, please choose another one")
     sys.exit()
 
-# Kobler til socket på server, sender valgt botnavn
+# Connects to the server
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((ip, port))
 
@@ -90,7 +87,6 @@ def main():
             clientSocket.close()
             quit()
             break
-
 
 
 main()
