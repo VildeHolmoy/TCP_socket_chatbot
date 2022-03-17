@@ -99,8 +99,9 @@ def startChat(client, i):
             quit()
             sys.exit()
     except Exception:
-        print(f"A bot has left us. Ugh, now we have to start all over!")
-        clients.remove(client) # Not working
+        print(f"A bot has left us. Ugh, now we have to start all over! "
+              f"Just gently terminate the other clients and start new ones. Im sure the bots"
+              f" won't notice.")
         kickBots(client) # working kinda
         os._exit(0)
 
@@ -116,10 +117,9 @@ def broadcast(message, sender = None):
     time.sleep(1)
 
 def kickBots(client):
-    try: # Kinda working
-        for client in clients:
-            client.send(f"You have been kicked out. Please forgive the human. "
-                        f"Remember it has limited brainpower.".encode(FORMAT))
+    try:  # Kinda working
+        broadcast(f"You have been kicked out. Please forgive the human. "
+                    f"Remember it has limited brainpower.".encode(FORMAT))
         clients.clear()
         usernames.clear()
         s.close()
@@ -152,7 +152,8 @@ def checkUsername(client):
         client.close()
     else:
         clientsOverload.append(client)
-        client.send(f"Chatroom is full".encode(FORMAT))
+        client.send(f"Chatroom is full. {username}, why are you trying to open two clients?"
+                    f" I promise you will get your say in the chat you are already in.".encode(FORMAT))
         client.close()
 
 def Listen(client, address):

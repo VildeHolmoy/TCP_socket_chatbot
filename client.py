@@ -79,6 +79,11 @@ def main():
                 clientSocket.close()
                 quit()
 
+            elif message.startswith("You have been"):
+                print(message)
+                clientSocket.close()
+                sys.exit()
+
             elif message != "":
                 print(message)
 
