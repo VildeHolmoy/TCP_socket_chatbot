@@ -35,14 +35,13 @@ try:
     if name not in allBots:
         print(f"Please choose one of these bots: Gina, Holly, Carl, Ralph")
 
-except(KeyError):
+except KeyError:
     print(f"Sorry, your bot is already taken, please choose another one")
     sys.exit()
 
 # Connects to the server
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((ip, port))
-
 
 def main():
     while True:

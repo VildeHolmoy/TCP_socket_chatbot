@@ -4,6 +4,7 @@ import sys
 import time
 import random
 from bots import goodWords, noSuggestion
+import os
 
 
 # Constants
@@ -25,73 +26,83 @@ s.listen()
 # List of connected clients and usernames
 clients = []
 usernames = []
+clientsOverload = []
 
 # Botnames
 botnames = {"Gina", "Holly", "Carl", "Ralph"}
 
 
 def startChat(client, i):
-    if i == 0:
-        print("======== Welcome to the chatroom o mighty human ========")
-        broadcast("======== Welcome to the chatroom to all you piles of metal ========")
+    try:
+        while True:
+            if i == 0:
+                print("======== Welcome to the chatroom o mighty human ========")
+                broadcast("======== Welcome to the chatroom to all you piles of metal ========")
 
-    if i == 1 or i == 2:
-        newRound = "======== New Round ========="
-        broadcast(newRound)
-        print(newRound)
+            if i == 1 or i == 2:
+                newRound = "======== New Round ========="
+                broadcast(newRound)
+                print(newRound)
 
-    if i < 3:
-        activity = random.choice(goodWords)
-        activity2 = random.choice(goodWords + noSuggestion)
+            if i < 3:
+                activity = random.choice(goodWords)
+                activity2 = random.choice(goodWords + noSuggestion)
 
-        if activity2 is None:
-            message = f"The President: We should {activity}"
-            print(message)
-            time.sleep(2)
+                if activity2 is None:
+                    message = f"The President: We should {activity}"
+                    print(message)
+                    time.sleep(2)
 
-        elif activity2:
-            message = f"The President: We should {activity} or {activity2}"
-            print(message)
-            time.sleep(2)
+                else:
+                    message = f"The President: We should {activity} or {activity2}"
+                    print(message)
+                    time.sleep(2)
 
-        for client in clients:
-            client.send(message.encode(FORMAT))
+                for client in clients:
+                    client.send(message.encode(FORMAT))
 
-        for client in clients:
-            time.sleep(2)
-            message2 = client.recv(SIZE).decode(FORMAT)
-            # client.send(message2.encode(FORMAT))
-            print(message2)
-            broadcast(message2)
+                for client in clients:
+                    time.sleep(2)
+                    message2 = client.recv(SIZE).decode(FORMAT)
+                    print(message2)
+                    broadcast(message2)
 
-        question = "The President: What du you think human? If you dont have any thoughts just press enter."
-        broadcast(question)
-        print(question)
+                question = "The President: What du you think human? If you dont have any thoughts just press enter."
+                broadcast(question)
+                print(question)
 
-        messageFromClient = input()
-        if messageFromClient != "":
-            broadcast(messageFromClient)
-            messageP2 = f"The President: The human have spoken! We will take your input into consideration. \n" \
-                        f"A new round will start in 5 seconds."
-            print(messageP2)
-            broadcast(messageP2)
-            time.sleep(5)
-            startChat(client, i + 1)
+                messageFromClient = input("")
+                time.sleep(2)
 
-        messageP1 = f"The President: Well I guess it's up to me then! I say we {activity}. \n" \
-                    f"Next round starts in 5 seconds"
-        print(messageP1)
-        broadcast(messageP1)
-        time.sleep(5)
-        startChat(client, i + 1)
-    if i >= 3:
-        broadcast(f"Bye")
-        print(f"Chatroom closed. I think you need a break from those bots! \n"
-              f"Start new chat the same way you did before, if you want more of "
-              f"those silly suggestions")
-    quit()
-    sys.exit()
+                if messageFromClient != "":
+                    broadcast(messageFromClient)
+                    messageP2 = f"The President: The human have spoken! We will take your input into consideration. \n" \
+                                f"A new round will start in 5 seconds."
+                    print(messageP2)
+                    broadcast(messageP2)
+                    time.sleep(5)
+                    startChat(client, i + 1)
 
+                else:
+                    messageP1 = f"The President: Well I guess it's up to me then! I say we {activity}. \n" \
+                                f"Next round starts in 5 seconds"
+                    print(messageP1)
+                    broadcast(messageP1)
+                    time.sleep(5)
+                    startChat(client, i + 1)
+
+            if i >= 3:
+                broadcast(f"Bye")
+                print(f"Chatroom closed. I think you need a break from those bots! \n"
+                      f"Start new chat the same way you did before, if you want more of "
+                      f"those silly suggestions")
+            quit()
+            sys.exit()
+    except Exception:
+        print(f"A bot has left us. Ugh, now we have to start all over!")
+        clients.remove(client) # Not working
+        kickBots(client) # working kinda
+        os._exit(0)
 
 # Sends message to all clients
 def broadcast(message, sender = None):
@@ -101,7 +112,23 @@ def broadcast(message, sender = None):
     for client in clients:
         if client != sender:
             client.send(message)
+
     time.sleep(1)
+
+def kickBots(client):
+    try: # Kinda working
+        for client in clients:
+            client.send(f"You have been kicked out. Please forgive the human. "
+                        f"Remember it has limited brainpower.".encode(FORMAT))
+        clients.clear()
+        usernames.clear()
+        s.close()
+        os._exit(0)
+    except:
+        clients.clear()
+        usernames.clear()
+        s.close()
+        os._exit(0)
 
 
 def checkUsername(client):
@@ -110,6 +137,7 @@ def checkUsername(client):
 
     if username not in usernames:
         clients.append(client)
+        clientsOverload.append(client)
         usernames.append(username)
         print(f"{username} have connected to the server")
         client.send(f" ======== Welcome to the chatroom ======== \n"
@@ -117,12 +145,20 @@ def checkUsername(client):
                     f"Now we have {' and '.join(usernames)} here! \n"
                     f"The chat will start when the room is full. We need {4 - (len(usernames))} more to start the chat".encode(FORMAT))
         broadcast(f"{username} has connected to the server! We need {4 - (len(usernames))} more to start the chat".encode(FORMAT), client)
-    else:
-        # usernamesLowercase = [i.lower for i in usernames]
+    elif clients.__len__() < 4:
         client.send(f"Taken".encode(FORMAT))
         availableBots = set(botnames).difference(set(usernames))
         client.send(f"{' and '.join(availableBots)} is the bot(s) that are still available".encode(FORMAT))
         client.close()
+    else:
+        clientsOverload.append(client)
+        client.send(f"Chatroom is full".encode(FORMAT))
+        client.close()
+
+def Listen(client, address):
+    while True:
+        client, address = s.accept()
+        checkUsername(client)
 
 
 # main function, runs the show. Adds clients to the server
@@ -135,25 +171,31 @@ while True:
             # working
             client, address = s.accept()
             checkUsername(client)
-            # Kan ha threading her for å lage egen thread til hver klient
-            # thread = threading.Thread(target=startChat, args=(client, 0))
-            # print(str(thread))
+            clientsOverload.append(client)
 
         except KeyboardInterrupt:
             #Not working
-            client.send(str(f"something has happened. You were kicked out").encode(FORMAT))
+            client.send(f"something has happened. You were kicked out".encode(FORMAT))
             quit()
 
 
-    if clients.__len__() == 4:
-        print(f"Chatroom is now full, and Chat will start in 5 seconds")
-        broadcast(f"Chatroom is now full! Chat will start in 5 seconds")
+    while clients.__len__() == 4:
+        print(f"Chatroom is now full. Chat will start in 5 seconds.")
+        broadcast(f"Chatroom is now full! Chat will start in 5 seconds.")
         # Starts new thread for chatroom
         time.sleep(5)
+        threadListen = threading.Thread(target=Listen, args=(client, address))
+        threadListen.start()
         thread = threading.Thread(target=startChat, args=(client, 0))
         thread.start()
-
+        thread.join()
+        threadListen.join()
     quit()
+
+
+
+
+
 
 #connect()
 

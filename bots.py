@@ -7,7 +7,7 @@ badWords = ["kill", "murder", "punch", "kick", "fight", "mock", "steal", "destro
             "break", "hurt", "abuse", "harm", "insult", "yell"]
 allWords = goodWords + badWords
 
-noSuggestion = [None]*(int(goodWords.__len__()/4))
+noSuggestion = [None]*(int(goodWords.__len__()/2))
 
 botnames = {"Gina", "Holly", "Carl", "Ralph"}
 
