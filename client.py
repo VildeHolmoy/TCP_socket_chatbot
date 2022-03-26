@@ -15,7 +15,8 @@ try:
               f"client.py <ip> <port> <botname> \n"
               f"For the ip address you can use 'localhost'. The port should be the same as used in the server file. \n"
               f"The bots to choose from are: Grumpy Gina, Happy Holly, Crazy Carl and Responsible Ralph. \n"
-              f"Please only use the bots first names, as they are very emotional and will be hurt if called any superlatives. \n"
+              f"Please only use the bots first names, as their sensitivity-meter is turned all the way up "
+              f"and they will be hurt if called any adjectives. \n"
               f"Remember that bots have an unbelievable memory. Don't get on their bad side.\n"
               f"If the bot you choose are already taken the terminal will show you who is available. \n"
               f"Example to connect to server: client.py localhost 2022 Gina \n"
@@ -23,75 +24,86 @@ try:
         sys.exit()
     port = int(sys.argv[2])
 
-except(IndexError, ValueError):
+except(IndexError, ValueError):                                         # If ip and port not specified correctly
     print(f"Ip and port must be specified")
     sys.exit()
 
-
 allBots = {"Gina", "Holly", "Carl", "Ralph"}
 
-try:
+# Command line input on bots
+try:                                                                    # Checks if given botname is one of the bots
     name = sys.argv[3]
     if name not in allBots:
-        print(f"Please choose one of these bots: Gina, Holly, Carl, Ralph")
+        print(f"Sorry, that is not a botname in this program. \n"
+              f"Please choose one of these bots: "
+              f"Gina, Holly, Carl or Ralph.")
+        sys.exit()
 
-except KeyError:
-    print(f"Sorry, your bot is already taken, please choose another one")
+except KeyError:                                                        # If botname is not a bot
+    print(f"Sorry, something went wrong! Please try again.")
     sys.exit()
 
-# Connects to the server
-clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-clientSocket.connect((ip, port))
+# Connection setup
+clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)        # Creates TCP socket
+try:
+    clientSocket.connect((ip, port))                                    # Connects to the server
 
+except:                                                                 # If the IP address or port is not matching the server
+    print(f"Sorry, your IP or port is not typed in right. "
+          f"Please try again. \n"
+          f"Remember the port number must be the same "
+          f"as the server port number. For IP-address"
+          f" you could use 'localhost'.")
+    sys.exit()                                                          # Exit program after guidance
+
+# Main program
 def main():
     while True:
         try:
-            # Is always receiving messages sent from server
-            message = clientSocket.recv(SIZE).decode(FORMAT)
+            message = clientSocket.recv(SIZE).decode(FORMAT)            # Is always receiving messages sent from server
 
-            # Takes request from server to get botname/username
-            if message == "GetUsername":
+            if message == "GetUsername":                                # Takes request from server to get botname/username
                 clientSocket.send(name.encode(FORMAT))
 
-            # If username is taken, the client disconnects from the socket
-            elif message == "Taken":
-                print(f"This bot is already spoken for. Please choose another bot.")
-                msg = clientSocket.recv(SIZE).decode(FORMAT)
+            elif message == "Taken":                                    # If username is taken,
+                print(f"This bot is already spoken for. "
+                      f"Please choose another bot.")
+                msg = clientSocket.recv(SIZE).decode(FORMAT)            # the client gets told which bots are available
                 print(msg)
                 clientSocket.shutdown(2)
-                clientSocket.close()
+                clientSocket.close()                                    # disconnects from the socket
 
-            # When the President starts dialouge, the clients should respond // needs fixing
-            elif message.startswith(f"The President: We "):
-                words = message.split(' ')
-                activity = words[4]
+            elif message.startswith(f"The President: We "):             # When the President starts dialogue
+                words = message.split(' ')                              # Makes each word in message a string in list
+                activity = words[4]                                     # Picks out the words that is activities from the Presidents message
                 try:
                     activity2 = words[6]
-                except:
+                except:                                                 # If activity is None
                     activity2 = None
                 print(message)
-                clientMessage = activationBot(name, activity, activity2)
-                clientSocket.send(f"{name}: {clientMessage}".encode())
 
-            elif message == "Bye":
-                print(f"Server disconnected, you have had enough botchat for now."
-                      f"You can start again by restarting server and reconnecting")
-                clientSocket.close()
-                quit()
+                clientMessage = activationBot(name, activity, activity2)    # The activities are sent to bots.py
+                clientSocket.send(f"{name}: {clientMessage}".encode())      # Message is then sent to server.
 
-            elif message.startswith("You have been"):
+            elif message == "Bye":                                      # Round 3 has completed
+                print(f"Server disconnected, you have "
+                      f"had enough botchat for now."
+                      f"You can start again by "
+                      f"restarting server and reconnecting")
+                clientSocket.close()                                    # Closes connection
+                sys.exit()                                              # Closes program
+
+            elif message.startswith("You have been"):                   # Kickout message from server.
                 print(message)
-                clientSocket.close()
-                sys.exit()
+                clientSocket.close()                                    # Closes connection
+                sys.exit()                                              # Closes program
 
             elif message != "":
                 print(message)
 
-        except:
-            clientSocket.close()
-            quit()
-            break
+        except:                                                         # If no messages is received
+            clientSocket.close()                                        # Close connection
+            sys.exit()                                                  # Close program
 
 
 main()
-
